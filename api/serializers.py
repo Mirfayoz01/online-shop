@@ -5,7 +5,7 @@ from root import settings
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'roles')
+        fields = ('email', 'phone_number', 'password')
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
