@@ -14,3 +14,12 @@ class Address(admin.ModelAdmin):
 @admin.register(Brand)
 class Brand(admin.ModelAdmin):
     list_display = ('id', 'name')
+
+@admin.register(Category)
+class Category(admin.ModelAdmin):
+    list_display = ('id', 'name', 'category')
+
+@admin.register(Product)
+class Product(admin.ModelAdmin):
+    list_display = ('id', 'name', 'description', 'price', 'category', 'brand')
+

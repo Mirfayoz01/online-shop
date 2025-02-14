@@ -1,42 +1,24 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
-from django.core.mail import send_mail
 
 class User(AbstractUser):
-    # Foydalanuvchi roli
     role = [
-        ('admin', 'Admin'),
-        ('user', 'User'),
-        ('customer', 'Customer')
+            ('admin', 'Admin'),
+            ('user', 'User'),
+            ('customer', 'Customer')
     ]
-    first_name = models.CharField(max_length=255)  # Ism
-    last_name = models.CharField(max_length=255)  # Familiya
-    username = models.CharField(_('username'), max_length=150, unique=True)
-    phone_number = models.IntegerField()
-    email = models.EmailField(unique=True)  # Email (foydalanuvchini autentifikatsiya qilish uchun)
-    roles = models.CharField(max_length=50, choices=role, default='user')  # Roli (Admin, User, Customer)
-    updated_at = models.DateTimeField(auto_now=True)  # Oxirgi yangilanish vaqti
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    username = models.CharField(_("username"), max_length=150, unique=True)
+    email = models.EmailField(unique=True)
+    phone_number = models.CharField(max_length=30, unique=True)
+    roles = models.CharField(max_length=50, choices=role, default='user')
+    updated_at = models.DateTimeField(auto_now=True)
 
-    USERNAME_FIELD = 'email'  # Login uchun email ishlatiladi
-    REQUIRED_FIELDS = ['username']  # Ro'yxatdan o'tishda username majburiy
-
-    class Meta:
-        verbose_name = _('user')
-        verbose_name_plural = _('users')
-
-    def get_full_name(self):
-        # Foydalanuvchining to'liq ismini qaytaradi
-        full_name = '%s %s' % (self.first_name, self.last_name)
-        return full_name.strip()
-
-    def get_short_name(self):
-        # Foydalanuvchining qisqa ismini qaytaradi
+    def str(self):
         return self.first_name
 
-    def email_user(self, subject, message, from_email=None, **kwargs):
-        # Foydalanuvchiga email jo'natadi
-        send_mail(subject, message, from_email, [self.email], **kwargs)
 
 class Address(models.Model):
     # Foydalanuvchi manzillari
