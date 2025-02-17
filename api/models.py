@@ -19,7 +19,6 @@ class User(AbstractUser):
     def str(self):
         return self.first_name
 
-
 class Address(models.Model):
     # Foydalanuvchi manzillari
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -36,16 +35,7 @@ class Brand(models.Model):
 
 class Category(models.Model):
     # Mahsulot turlari va kategoriyalari
-    CATEGORY_CHOICES = [
-        ('mobile_accessory', 'Mobile Accessory'),
-        ('electronics', 'Electronics'),
-        ('smartphones', 'Smartphones'),
-        ('modern_tech', 'Modern Tech'),
-    ]
-
     name = models.CharField(max_length=255)
-    # parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name="subcategories")
-    category = models.CharField(choices=CATEGORY_CHOICES, max_length=50)
 
 class Product(models.Model):
     # Mahsulot modeli

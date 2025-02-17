@@ -1,12 +1,18 @@
 from django.contrib.auth.hashers import make_password
+from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from api.admin import User
-from api.serializers import RegisterSerializer, LoginSerializer
+from api.admin import Address
+from api.serializers import RegisterSerializer, LoginSerializer, UserSerializer, AddressSerializer
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class LoginApiView(APIView):
@@ -55,9 +61,85 @@ class RegisterApiView(APIView):
             return Response(
                 {
                     "refresh": str(refresh),
-                    "access": access_token,
-                    "user" : serializer.data
+                    "access": access_token
                 },status=status.HTTP_201_CREATED
             )
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserUpdateView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsAuthenticated]  # Faqat autentifikatsiyalangan user
+
+    @extend_schema(
+        request=UserSerializer,
+        responses={200: "User updated successfully"}
+    )
+    def put(self, request, pk):
+        if request.user.id != pk:
+            return Response(
+                {"detail": "Siz faqat o'z profilingizni yangilashingiz mumkin."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = UserSerializer(instance=request.user, data=request.data, partial=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "User updated successfully"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AddressListCreateAPIView(APIView):
+    """
+    GET - Address ro'yxatini olish
+    POST - Yangi Address qo'shish
+    """
+
+    def get(self, request):
+        addresses = Address.objects.all()
+        serializer = AddressSerializer(addresses, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = AddressSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AddressDetailAPIView(APIView):
+    """
+    GET - Bitta Address ma'lumotlarini olish
+    PUT - Address ma'lumotlarini yangilash
+    DELETE - Addressni o'chirish
+    """
+
+    def get_object(self, pk):
+        try:
+            return Address.objects.get(pk=pk)
+        except Address.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        address = self.get_object(pk)
+        if address is None:
+            return Response({"error": "Address not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = AddressSerializer(address)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        address = self.get_object(pk)
+        if address is None:
+            return Response({"error": "Address not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = AddressSerializer(address, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        address = self.get_object(pk)
+        if address is None:
+            return Response({"error": "Address not found"}, status=status.HTTP_404_NOT_FOUND)
+        address.delete()
+        return Response({"message": "Address deleted"}, status=status.HTTP_204_NO_CONTENT)
+
