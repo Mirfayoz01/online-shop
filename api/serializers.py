@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from api.models import User, Address, Brand
+from api.models import User, Address, Brand, Category, Product
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -40,4 +40,14 @@ class AddressSerializer(serializers.ModelSerializer):
 class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
-        fields = '__all__' 
+        fields = ('id', 'name')
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('id', 'name')
+
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ('id', 'name', 'description', 'price', 'stock')

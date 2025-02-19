@@ -34,7 +34,6 @@ class Brand(models.Model):
     name = models.CharField(max_length=255)
 
 class Category(models.Model):
-    # Mahsulot turlari va kategoriyalari
     name = models.CharField(max_length=255)
 
 class Product(models.Model):
@@ -44,7 +43,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     discount_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     stock = models.IntegerField()  # Ombordagi mahsulotlar soni
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

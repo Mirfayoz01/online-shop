@@ -15,9 +15,7 @@ class Address(admin.ModelAdmin):
 class Brand(admin.ModelAdmin):
     list_display = ('id', 'name')
 
-@admin.register(Category)
-class Category(admin.ModelAdmin):
-    list_display = ('id', 'name')
+admin.site.register(Category)
 
 @admin.register(Product)
 class Product(admin.ModelAdmin):
