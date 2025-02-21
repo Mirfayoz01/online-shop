@@ -37,22 +37,21 @@ class Brand(models.Model):
         return self.name
 
 class Category(models.Model):
-    name = models.CharField(max_length=255, null=True, blank=False)
+    name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
 
 class Product(models.Model):
-    # Mahsulot modeli
     name = models.CharField(max_length=255)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    discount_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    stock = models.IntegerField()  # Ombordagi mahsulotlar soni
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
+    stock = models.IntegerField()
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)  # 🔹 null=True, blank=True qo‘shildi
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
 
 class ProductImage(models.Model):
     # Mahsulot rasmlari

@@ -2,7 +2,7 @@ from django.contrib.auth.hashers import make_password
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -153,22 +153,19 @@ class BrandAPI(APIView):
 class CategoryAPI(APIView):
     def get(self, request):
         categories = Category.objects.all()
-        serializer = CategorySerializer(categories)
+        serializer = CategorySerializer(categories, many=True)
         return Response(serializer.data)
 
 class ProductAPI(APIView):
-    parser_classes = (MultiPartParser, FormParser)
+    parser_classes = (MultiPartParser, FormParser, JSONParser)  # Har xil formatlarni qo‘llab-quvvatlash
 
-    @extend_schema(
-        request=ProductSerializer,
-        responses={200: "Product create successfully"}
-    )
     def get(self, request):
         products = Product.objects.all()
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
+        print("Received data:", request.data)  # Debug uchun
         serializer = ProductSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
