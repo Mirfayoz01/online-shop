@@ -18,3 +18,5 @@ class ProductAdmin(admin.ModelAdmin):
 admin.site.register(ProductImage)
 
 admin.site.register(Review)
+
+admin.site.register(Supplier)

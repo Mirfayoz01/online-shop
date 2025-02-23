@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from api.models import User, Address, Brand, Category, Product, ProductImage, Review
+from api.models import User, Address, Brand, Category, Product, ProductImage, Review, Supplier
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -56,6 +56,11 @@ class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
         fields = ('id', 'product', 'image_url')
+
+class SupplierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Supplier
+        fields = '__all__'
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:

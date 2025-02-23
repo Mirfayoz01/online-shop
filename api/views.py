@@ -9,9 +9,9 @@ from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from api.admin import Address, Brand, Category
-from api.models import Review, Product
+from api.models import Review, Product, Supplier
 from api.serializers import RegisterSerializer, LoginSerializer, UserSerializer, AddressSerializer, BrandSerializer, \
-    CategorySerializer, ProductSerializer, ProductImageSerializer, ReviewSerializer
+    CategorySerializer, ProductSerializer, ProductImageSerializer, ReviewSerializer, SupplierSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -251,3 +251,44 @@ class ReviewAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SuplierCreateAPIView(APIView):
+    def get(self, request):
+        suppliers = Supplier.objects.all()
+        serializer = SupplierSerializer(suppliers, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(
+            summary='Supplier',
+            description='Enter supplier',
+            request=SupplierSerializer
+    )
+
+    def post(self, request):
+        serializer = SupplierSerializer(data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SuplierDetailAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, pk):
+        try:
+            supplier = Supplier.objects.get(user=request.user, pk=pk)
+        except Supplier.DoesNotExist:
+            return Response({'error': 'Supplier not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = SupplierSerializer(supplier)
+        return Response(serializer.data)
+
+    def delete(self, request, pk):
+        try:
+            supplier = Supplier.objects.get(user=request.user, pk=pk)
+        except Supplier.DoesNotExist:
+            return Response({"error": "Supplier not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        supplier.delete()
+        return Response({"message": "Supplier deleted"}, status=status.HTTP_204_NO_CONTENT)

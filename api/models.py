@@ -67,6 +67,7 @@ class ProductImage(models.Model):
 
 class Supplier(models.Model):
     # Yetkazib beruvchilar
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=255)
     location = models.CharField(max_length=255)
     verified = models.BooleanField(default=False)
