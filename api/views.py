@@ -1,7 +1,6 @@
-from django.contrib.auth.hashers import make_password
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiParameter, extend_schema, OpenApiResponse
-from rest_framework import status
+from rest_framework import status, generics, permissions
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -9,9 +8,10 @@ from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from api.admin import Address, Brand, Category
-from api.models import Review, Product, Supplier
+from api.models import Review, Product, Supplier, Order, Wishlist, ProductImage, Comment, CartItem
 from api.serializers import RegisterSerializer, LoginSerializer, UserSerializer, AddressSerializer, BrandSerializer, \
-    CategorySerializer, ProductSerializer, ProductImageSerializer, ReviewSerializer, SupplierSerializer
+    CategorySerializer, ProductSerializer, ProductImageSerializer, ReviewSerializer, SupplierSerializer, \
+    OrderSerializer, WishlistSerializer, CommentSerializer, CartItemSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -233,7 +233,7 @@ class ProductImageAPIView(APIView):
     parser_classes = (MultiPartParser, FormParser, JSONParser)
 
     def get(self, request):
-        products = Product.objects.all()
+        products = ProductImage.objects.all()
         serializer = ProductImageSerializer(products, many=True)
         return Response(serializer.data)
 
@@ -245,10 +245,16 @@ class ReviewAPIView(APIView):
         serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        summary='Review',
+        description='Enter Review',
+        request=ReviewSerializer,
+    )
+
     def post(self, request, *args, **kwargs):
         serializer = ReviewSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -271,7 +277,6 @@ class SuplierCreateAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class SuplierDetailAPIView(APIView):
     permission_classes = (IsAuthenticated,)
 
@@ -287,8 +292,122 @@ class SuplierDetailAPIView(APIView):
     def delete(self, request, pk):
         try:
             supplier = Supplier.objects.get(user=request.user, pk=pk)
+            if supplier.user != request.user:
+                return Response({"error": "You do not have permission to delete this supplier"},)
+            supplier.delete()
+            return Response({"message": "Supplier deleted"}, status=status.HTTP_204_NO_CONTENT)
         except Supplier.DoesNotExist:
             return Response({"error": "Supplier not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        supplier.delete()
-        return Response({"message": "Supplier deleted"}, status=status.HTTP_204_NO_CONTENT)
+class OrderListView(APIView):
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
+
+    def get(self, request):
+        orders = Order.objects.all()
+        serializer = OrderSerializer(orders, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary='Order',
+        description='Enter Orders',
+        request=OrderSerializer
+    )
+
+    def post(self, request, *args, **kwargs):
+        serializer = OrderSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class OrderDetailView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def delete(self, request, pk):
+        try:
+            order = Order.objects.get(user=request.user, pk=pk)
+            if order.user != request.user:
+                return Response({"error": "You do not have permission to delete this order"},)
+            order.delete()
+            return Response({"message": "Order deleted"}, status=status.HTTP_204_NO_CONTENT)
+        except Order.DoesNotExist:
+            return Response({"error": "Order not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class WishlistListCreateView(generics.ListCreateAPIView):
+    queryset = Wishlist.objects.all()
+    serializer_class = WishlistSerializer
+    permission_classes = [IsAuthenticated]
+
+class CommentListAPIView(APIView):
+
+    def get(self, request):
+        comments = Comment.objects.all()
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary='Comment',
+        description='Enter Comment',
+        request=CommentSerializer
+    )
+
+    def post(self, request):
+        serializer = CommentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CommentDetailView(APIView):
+
+    def get_object(self, pk):
+        try:
+            return Comment.objects.get(pk=pk)
+        except Comment.DoesNotExist:
+            return None
+
+    def delete(self, request, pk):
+        comment = self.get_object(pk)
+        if comment is None:
+            return Response({"error": "Comment not found"}, status=status.HTTP_404_NOT_FOUND)
+        comment.delete()
+        return Response({"message": "Comment deleted"}, status=status.HTTP_204_NO_CONTENT)
+
+class CartItemListCreateAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        cart_items = CartItem.objects.filter(user=request.user)
+        serializer = CartItemSerializer(cart_items, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = CartItemSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CartItemDetailAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self, pk, user):
+        return get_object_or_404(CartItem, pk=pk, user=user)
+
+    def get(self, request, pk):
+        cart_item = self.get_object(pk, request.user)
+        serializer = CartItemSerializer(cart_item)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        cart_item = self.get_object(pk, request.user)
+        serializer = CartItemSerializer(cart_item, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        cart_item = self.get_object(pk, request.user)
+        cart_item.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

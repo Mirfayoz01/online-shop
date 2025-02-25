@@ -85,6 +85,9 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.user.username if self.user else "No User"
+
 class OrderItem(models.Model):
     # Buyurtma ichidagi mahsulotlar
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
@@ -103,6 +106,9 @@ class Wishlist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.product.name
 
 class Review(models.Model):
     # Foydalanuvchilar tomonidan mahsulot baholash

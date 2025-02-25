@@ -19,4 +19,14 @@ admin.site.register(ProductImage)
 
 admin.site.register(Review)
 
-admin.site.register(Supplier)
+admin.site.register(Wishlist)
+
+@admin.register(Supplier)
+class SupplierAdmin(admin.ModelAdmin):
+    list_display = ("id", "name")
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "total_price", "status")
+
+admin.site.register(Comment)

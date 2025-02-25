@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from api.models import User, Address, Brand, Category, Product, ProductImage, Review, Supplier
+from api.models import User, Address, Brand, Category, Product, ProductImage, Review, Supplier, Order, Wishlist, \
+    Comment, CartItem
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -48,21 +49,71 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('id', 'name')
 
 class ProductSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+
     class Meta:
         model = Product
-        fields = ('id', 'name', 'description', 'price', 'stock')
+        fields = ('id', 'user', 'name', 'description', 'price', 'stock')
+
+    def get_user(self, obj):
+        return obj.user.username
 
 class ProductImageSerializer(serializers.ModelSerializer):
+    product = serializers.SerializerMethodField()
     class Meta:
         model = ProductImage
         fields = ('id', 'product', 'image_url')
 
+    def get_product(self, obj):
+        return obj.product.name
+
 class SupplierSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+
     class Meta:
         model = Supplier
         fields = '__all__'
 
+    def get_user(self, obj):
+        return obj.user.username
+
 class ReviewSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+
     class Meta:
         model = Review
         fields = ('id', 'user', 'product', 'rating', 'comment')
+
+
+
+    def get_user(self, obj):
+        return obj.user.username
+
+class OrderSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+    class Meta:
+        model  = Order
+        fields = ('id', 'user', 'total_price', 'status')
+
+    def get_user(self, obj):
+        return obj.user.username
+
+class WishlistSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField()  # User nomi bilan keladi
+    product = serializers.StringRelatedField()
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
+
+    class Meta:
+        model = Wishlist
+        fields = ['id', 'user','product', 'created_at']
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ('user', 'message', 'status')
+
+class CartItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CartItem
+        fields = ['id', 'user', 'product', 'quantity']
+        read_only_fields = ['user']
