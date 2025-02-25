@@ -3,7 +3,7 @@ from django.urls import path
 from api.views import RegisterApiView, LoginApiView, UserUpdateView, BrandAPI, CategoryAPI, ProductAPI, \
     ProductImageAPIView, ProductUpdateAPIView, ProductDeleteAPIView, ReviewAPIView, SuplierDetailAPIView, \
     SuplierCreateAPIView, OrderListView, OrderDetailView, WishlistListCreateView, CommentListAPIView, CommentDetailView, \
-    CartItemListCreateAPIView, CartItemDetailAPIView
+    CartItemListCreateAPIView, CartItemDetailAPIView, DealAPIView
 
 urlpatterns = [
     path("register", RegisterApiView.as_view(), name="register"),
@@ -14,7 +14,7 @@ urlpatterns = [
     path('supplier/<int:pk>/', SuplierDetailAPIView.as_view(), name='supplier-detail'),
     path('cart/', CartItemListCreateAPIView.as_view(), name='cart-list-create'),
     path('cart/<int:pk>/', CartItemDetailAPIView.as_view(), name='cart-detail'),
-
+    path('deal', DealAPIView.as_view(), name='deal-list'),
     path('comments', CommentListAPIView.as_view(), name='comment-list-create'),
     path('comments/<int:pk>/', CommentDetailView.as_view(), name='comment-detail'),
     path('orders', OrderListView.as_view(), name='order-list'),

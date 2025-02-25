@@ -8,10 +8,10 @@ from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from api.admin import Address, Brand, Category
-from api.models import Review, Product, Supplier, Order, Wishlist, ProductImage, Comment, CartItem
+from api.models import Review, Product, Supplier, Order, Wishlist, ProductImage, Comment, CartItem, Deal
 from api.serializers import RegisterSerializer, LoginSerializer, UserSerializer, AddressSerializer, BrandSerializer, \
     CategorySerializer, ProductSerializer, ProductImageSerializer, ReviewSerializer, SupplierSerializer, \
-    OrderSerializer, WishlistSerializer, CommentSerializer, CartItemSerializer
+    OrderSerializer, WishlistSerializer, CommentSerializer, CartItemSerializer, DealSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -254,7 +254,7 @@ class ReviewAPIView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = ReviewSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -350,7 +350,6 @@ class CommentListAPIView(APIView):
         description='Enter Comment',
         request=CommentSerializer
     )
-
     def post(self, request):
         serializer = CommentSerializer(data=request.data)
         if serializer.is_valid():
@@ -411,3 +410,24 @@ class CartItemDetailAPIView(APIView):
         cart_item = self.get_object(pk, request.user)
         cart_item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class DealAPIView(APIView):
+
+    def get(self, request):
+        deal = Deal.objects.all()
+        serializer = DealSerializer(deal, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary='Deal',
+        description="Enter Deal",
+        request=DealSerializer
+    )
+
+
+    def post(self, request):
+        serializer = DealSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

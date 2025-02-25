@@ -30,3 +30,9 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "total_price", "status")
 
 admin.site.register(Comment)
+
+admin.site.register(Deal)
+
+admin.site.register(OrderItem)
+
+admin.site.register(CartItem)

@@ -82,8 +82,8 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateField(_('create_at'), auto_now_add=True)
+    updated_at = models.DateField(_('update_at'), auto_now=True)
 
     def __str__(self):
         return self.user.username if self.user else "No User"
@@ -122,11 +122,10 @@ class Review(models.Model):
         return self.comment
 
 class Comment(models.Model):
-    # Foydalanuvchi izohlari
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.TextField()
     status = models.CharField(max_length=50, choices=[('visible', 'Visible'), ('hidden', 'Hidden')])
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateField(_('created_at'), auto_now=True)
 
 class Deal(models.Model):
     # Chegirmali mahsulotlar (aksiya)
@@ -144,5 +143,5 @@ class Deal(models.Model):
     discount = models.CharField(max_length=20, choices=DISCOUNT_CHOICES, default='no_discount')  # Chegirma foizi
     discount_time = models.TimeField()  # Chegirma davomiyligi
 
-    def __str__(self):
-        return str(self.discount_time)
+    def __int__(self):
+        return self.phone_name

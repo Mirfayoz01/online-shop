@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from api.models import User, Address, Brand, Category, Product, ProductImage, Review, Supplier, Order, Wishlist, \
-    Comment, CartItem
+    Comment, CartItem, Deal
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -49,7 +49,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('id', 'name')
 
 class ProductSerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
+    user = UserSerializer()
 
     class Meta:
         model = Product
@@ -59,7 +59,7 @@ class ProductSerializer(serializers.ModelSerializer):
         return obj.user.username
 
 class ProductImageSerializer(serializers.ModelSerializer):
-    product = serializers.SerializerMethodField()
+    product = ProductSerializer()
     class Meta:
         model = ProductImage
         fields = ('id', 'product', 'image_url')
@@ -68,7 +68,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
         return obj.product.name
 
 class SupplierSerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
+    user = UserSerializer()
 
     class Meta:
         model = Supplier
@@ -78,7 +78,7 @@ class SupplierSerializer(serializers.ModelSerializer):
         return obj.user.username
 
 class ReviewSerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
+    user = UserSerializer()
 
     class Meta:
         model = Review
@@ -90,7 +90,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         return obj.user.username
 
 class OrderSerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
+    user = UserSerializer()
     class Meta:
         model  = Order
         fields = ('id', 'user', 'total_price', 'status')
@@ -99,8 +99,8 @@ class OrderSerializer(serializers.ModelSerializer):
         return obj.user.username
 
 class WishlistSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField()  # User nomi bilan keladi
-    product = serializers.StringRelatedField()
+    user = UserSerializer()  # User nomi bilan keladi
+    product = ProductSerializer()
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
 
     class Meta:
@@ -110,10 +110,15 @@ class WishlistSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ('user', 'message', 'status')
+        fields = ('user', 'message', 'status', 'created_at')
 
 class CartItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = CartItem
         fields = ['id', 'user', 'product', 'quantity']
         read_only_fields = ['user']
+
+class DealSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Deal
+        fields = ('id', 'start_time', 'end_time', 'img', 'discount', 'discount_time')
