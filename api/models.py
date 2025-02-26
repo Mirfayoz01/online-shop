@@ -98,6 +98,8 @@ class CartItem(models.Model):
     # Savatchadagi mahsulotlar
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    img = models.ImageField(upload_to='cart/')
+    descrp = models.CharField(max_length=255)
     quantity = models.IntegerField()
 
 class Wishlist(models.Model):

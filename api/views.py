@@ -229,6 +229,13 @@ class ProductUpdateAPIView(APIView):
             return Response(serializer.data, status=HTTP_200_OK)
         return Response(serializer.errors, status=400)
 
+class ProductDetailAPIView(APIView):
+    def get(self, request, pk):
+        product = get_object_or_404(Product, pk=pk)
+        serializer = ProductSerializer(product)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class ProductImageAPIView(APIView):
     parser_classes = (MultiPartParser, FormParser, JSONParser)
 
@@ -373,19 +380,30 @@ class CommentDetailView(APIView):
         return Response({"message": "Comment deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 class CartItemListCreateAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)
 
     def get(self, request):
-        cart_items = CartItem.objects.filter(user=request.user)
+        cart_items = CartItem.objects.all()
         serializer = CartItemSerializer(cart_items, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        summary='CartItem',
+        description='Enter CartItem',
+        request=CartItemSerializer
+    )
     def post(self, request):
         serializer = CartItemSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        try:
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except CartItem.DoesNotExist:
+            return Response({"error": "Cart item not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # ❗ Agar serializer noto‘g‘ri bo‘lsa, shuni qaytarish kerak
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class CartItemDetailAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]

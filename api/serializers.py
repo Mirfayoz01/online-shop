@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from api.models import User, Address, Brand, Category, Product, ProductImage, Review, Supplier, Order, Wishlist, \
     Comment, CartItem, Deal
+from root import settings
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -49,14 +50,15 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('id', 'name')
 
 class ProductSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Product
         fields = ('id', 'user', 'name', 'description', 'price', 'stock')
 
-    def get_user(self, obj):
-        return obj.user.username
+    def create(self, validated_data):
+        user = self.context['request'].user  # Foydalanuvchini olamiz
+        return Product.objects.create(user=user, **validated_data)
 
 class ProductImageSerializer(serializers.ModelSerializer):
     product = ProductSerializer()
@@ -68,26 +70,17 @@ class ProductImageSerializer(serializers.ModelSerializer):
         return obj.product.name
 
 class SupplierSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
 
     class Meta:
         model = Supplier
         fields = '__all__'
 
-    def get_user(self, obj):
-        return obj.user.username
 
 class ReviewSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
 
     class Meta:
         model = Review
         fields = ('id', 'user', 'product', 'rating', 'comment')
-
-
-
-    def get_user(self, obj):
-        return obj.user.username
 
 class OrderSerializer(serializers.ModelSerializer):
     user = UserSerializer()
@@ -98,9 +91,7 @@ class OrderSerializer(serializers.ModelSerializer):
     def get_user(self, obj):
         return obj.user.username
 
-class WishlistSerializer(serializers.ModelSerializer):
-    user = UserSerializer()  # User nomi bilan keladi
-    product = ProductSerializer()
+class WishlistSerializer(serializers.ModelSerializer): # User nomi bilan keladi
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
 
     class Meta:
@@ -113,10 +104,18 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('user', 'message', 'status', 'created_at')
 
 class CartItemSerializer(serializers.ModelSerializer):
+    img = serializers.ImageField()
     class Meta:
         model = CartItem
-        fields = ['id', 'user', 'product', 'quantity']
-        read_only_fields = ['user']
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.img:
+            representation['img'] = settings.BASE_URL + instance.img.url
+        else:
+            representation['img'] = None
+        return representation
 
 class DealSerializer(serializers.ModelSerializer):
     class Meta:
