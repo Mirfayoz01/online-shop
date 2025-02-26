@@ -64,7 +64,6 @@ class ProductImage(models.Model):
     def __str__(self):
         return self.product.name
 
-
 class Supplier(models.Model):
     # Yetkazib beruvchilar
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -136,8 +135,8 @@ class Deal(models.Model):
         ('25%', '25%'),
         ('40%', '40%'),
     ]
-    start_time = models.DateTimeField()  # Aksiya boshlanish vaqti
-    end_time = models.DateTimeField()  # Aksiya tugash vaqti
+    start_time = models.DateField()  # Aksiya boshlanish vaqti
+    end_time = models.DateField()  # Aksiya tugash vaqti
     phone_name = models.CharField(_('phone name'), max_length=30, blank=True)  # Aksiya uchun mahsulot nomi
     img = models.ImageField(_('image'))  # Aksiya uchun rasm
     discount = models.CharField(max_length=20, choices=DISCOUNT_CHOICES, default='no_discount')  # Chegirma foizi
